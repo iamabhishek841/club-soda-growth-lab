@@ -1,490 +1,122 @@
 from __future__ import annotations
 
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from src.content import (
-    EXPERIMENTS,
-    MEASUREMENT_EVENTS,
-    PUBLIC_OBSERVATIONS,
-    ROADMAP,
-    SEGMENTS,
-)
-from src.growth_model import (
-    FunnelInputs,
-    FunnelUplifts,
-    compare_scenarios,
-    two_proportion_sample_size,
-)
+from src.content import MEASUREMENT_EVENTS
+from src.growth_model import FunnelInputs, FunnelUplifts, compare_scenarios
 
-st.set_page_config(
-    page_title="Club Soda Growth Lab",
-    page_icon="↗",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+st.set_page_config(page_title="Club Soda Growth Lab", page_icon="↗", layout="wide", initial_sidebar_state="expanded")
 
 CUSTOM_CSS = """
 <style>
-    .block-container {padding-top: 1.7rem; padding-bottom: 4rem; max-width: 1240px;}
-    h1, h2, h3 {letter-spacing: -0.025em;}
-    .hero {
-        padding: 2rem 2.2rem;
-        border: 1px solid rgba(120,120,120,.22);
-        border-radius: 22px;
-        background: linear-gradient(135deg, rgba(124,58,237,.13), rgba(20,184,166,.10));
-        margin-bottom: 1.1rem;
-    }
-    .hero-kicker {font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .11em; opacity: .72;}
-    .hero-title {font-size: 2.4rem; line-height: 1.04; font-weight: 800; margin: .45rem 0 .65rem 0;}
-    .hero-copy {font-size: 1.05rem; max-width: 850px; opacity: .88;}
-    .pill {display:inline-block; padding:.34rem .72rem; border-radius:999px; margin:.18rem .22rem .18rem 0; background:rgba(124,58,237,.11); border:1px solid rgba(124,58,237,.18); font-size:.85rem;}
-    .callout {padding: 1rem 1.1rem; border-left: 4px solid #14b8a6; background: rgba(20,184,166,.08); border-radius: 8px;}
-    .small-note {font-size: .82rem; opacity:.72;}
-    .journey-step {padding:.85rem 1rem; border-radius:14px; border:1px solid rgba(120,120,120,.2); min-height:110px;}
-    .section-label {font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; opacity:.62; margin-bottom:.2rem;}
-    .metric-card {padding: 1rem 1.05rem; border:1px solid rgba(120,120,120,.18); border-radius:16px; background:rgba(255,255,255,.72); min-height:104px;}
-    .metric-label {font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; opacity:.58; margin-bottom:.45rem;}
-    .metric-value {font-size:1.22rem; line-height:1.18; font-weight:760; letter-spacing:-.02em; overflow-wrap:anywhere;}
-    .role-line {margin-top:1.05rem; padding-top:.9rem; border-top:1px solid rgba(90,90,120,.15); font-size:.92rem; opacity:.86;}
-    .case-note {padding:.58rem .78rem; border:1px solid rgba(120,120,120,.14); background:rgba(120,120,120,.045); border-radius:10px; font-size:.80rem; opacity:.76; margin:.15rem 0 1.25rem 0;}
-    .footer {margin-top:3rem; padding-top:1.2rem; border-top:1px solid rgba(120,120,120,.2); font-size:.85rem; opacity:.74;}
+.block-container{padding-top:1.55rem;padding-bottom:3rem;max-width:1220px}h1,h2,h3{letter-spacing:-.025em}[data-testid="stSidebar"]{border-right:1px solid rgba(120,120,120,.12)}
+.hero{padding:2.15rem 2.25rem;border:1px solid rgba(100,100,130,.16);border-radius:24px;background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(20,184,166,.09));margin-bottom:1.15rem}.hero-kicker{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;opacity:.62}.hero-title{font-size:2.55rem;line-height:1.03;font-weight:820;margin:.45rem 0 .55rem}.hero-copy{font-size:1.05rem;line-height:1.65;max-width:900px;opacity:.86}.role-badge{display:inline-block;margin-top:1rem;padding:.42rem .72rem;border-radius:999px;background:rgba(255,255,255,.72);border:1px solid rgba(100,100,130,.14);font-size:.84rem;font-weight:700}.micro-note{font-size:.76rem;opacity:.58;margin:.35rem 0 1.15rem}
+.focus-card,.opportunity-card,.step-card{padding:1.05rem 1.08rem;border:1px solid rgba(120,120,120,.16);border-radius:18px;background:rgba(255,255,255,.76);height:100%}.card-kicker{font-size:.70rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.54;margin-bottom:.42rem}.card-title{font-size:1.08rem;line-height:1.2;font-weight:780;margin-bottom:.45rem}.card-copy{font-size:.91rem;line-height:1.55;opacity:.78}.card-metric{font-size:.80rem;font-weight:700;margin-top:.75rem;opacity:.72}
+.flow-wrap{display:flex;gap:.55rem;align-items:stretch;margin:.55rem 0 1rem}.flow-box{flex:1;padding:.82rem .8rem;border:1px solid rgba(120,120,120,.14);border-radius:14px;background:rgba(124,58,237,.045);text-align:center;min-width:0}.flow-box b{font-size:.91rem}.flow-box span{display:block;margin-top:.22rem;font-size:.73rem;opacity:.60;line-height:1.35}.kpi-card{padding:.85rem .95rem;border:1px solid rgba(120,120,120,.14);border-radius:15px;background:rgba(255,255,255,.70);min-height:88px}.kpi-label{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;opacity:.50}.kpi-value{font-size:.98rem;font-weight:760;margin-top:.32rem;line-height:1.2}.impact-box{padding:1rem 1.1rem;border-radius:16px;background:linear-gradient(135deg,rgba(20,184,166,.09),rgba(124,58,237,.06));border:1px solid rgba(20,184,166,.16)}.phase-card{padding:1.05rem;border:1px solid rgba(120,120,120,.15);border-radius:17px;min-height:265px;background:rgba(255,255,255,.74)}.phase-title{font-size:1.02rem;font-weight:800;margin-bottom:.2rem}.section-intro{max-width:900px;font-size:.96rem;line-height:1.55;opacity:.80;margin-bottom:1rem}.footer{margin-top:2.6rem;padding-top:1rem;border-top:1px solid rgba(120,120,120,.14);font-size:.80rem;opacity:.62}
+@media(max-width:900px){.flow-wrap{display:grid;grid-template-columns:1fr 1fr}.hero-title{font-size:2rem}}
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-
-def fmt_int(value: float) -> str:
-    return f"{value:,.0f}"
-
-
-def fmt_eur(value: float) -> str:
-    return f"€{value:,.0f}"
-
-
-def render_disclaimer() -> None:
-    st.markdown(
-        """
-        <div class="case-note">
-        Independent portfolio case study using public Club Soda information and synthetic demonstration data. No internal analytics, ad-account or customer data is used.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
+def money(value: float) -> str: return f"€{value:,.0f}"
+def number(value: float) -> str: return f"{value:,.0f}"
 
 with st.sidebar:
     st.markdown("### Club Soda Growth Lab")
-    st.caption("Digital sales, customer journey & conversion prototype")
-    section = st.radio(
-        "Explore",
-        [
-            "Executive overview",
-            "Website & journey audit",
-            "Funnel simulator",
-            "Segments & lifecycle",
-            "Campaign lab",
-            "Experiment lab",
-            "90-day plan",
-            "Methods & sources",
-        ],
-        label_visibility="collapsed",
-    )
+    st.caption("Practical digital sales & growth case study")
+    section = st.radio("Explore", ["Growth overview","Website opportunities","Funnel simulator","Campaign studio","Customer journey","90-day action plan"], label_visibility="collapsed")
     st.divider()
     st.markdown("**Built by Abhishek Kumar**")
-    st.caption("MSc Business Analytics · consumer research · growth analytics · experimentation")
-    st.markdown("[View source](https://github.com/iamabhishek841/club-soda-growth-lab) · [LinkedIn](https://www.linkedin.com/in/iamabhishek841)")
+    st.caption("MSc Business Analytics · consumer research · growth analytics")
+    st.markdown("[Live app](https://club-soda-growth-lab.streamlit.app/) · [View source](https://github.com/iamabhishek841/club-soda-growth-lab)")
+    st.markdown("[LinkedIn](https://www.linkedin.com/in/iamabhishek841)")
+    with st.expander("About this case study"):
+        st.caption("Independent portfolio work based on public Club Soda website information. Any performance numbers shown in the simulator are synthetic demonstration inputs, not Club Soda results.")
+        st.markdown("Public pages reviewed: [Home](https://www.clubsoda.ie/) · [Events](https://www.clubsoda.ie/events/) · [Shop](https://www.clubsoda.ie/shop/) · [FAQ](https://www.clubsoda.ie/events/faq-s/)")
 
+st.markdown("""<div class="hero"><div class="hero-kicker">Club Soda · Digital sales & marketing case study</div><div class="hero-title">Turn more interest into bookings, sales and repeat customers.</div><div class="hero-copy">A practical growth plan showing how I would connect social content, the website, event booking, email follow-up and the upcoming shop into one simple, measurable customer journey.</div><div class="role-badge">Built specifically for the Digital Sales &amp; Marketing Specialist role</div></div>""", unsafe_allow_html=True)
+st.markdown('<div class="micro-note">Independent portfolio case study · public website information · synthetic simulator inputs</div>', unsafe_allow_html=True)
 
-st.markdown(
-    """
-    <div class="hero">
-      <div class="hero-kicker">Independent growth case study</div>
-      <div class="hero-title">Club Soda Growth Lab</div>
-      <div class="hero-copy">A hands-on prototype for turning awareness into measurable event bookings, shop demand and repeat engagement — with a clear measurement plan behind every recommendation.</div>
-      <div style="margin-top:.9rem">
-        <span class="pill">Customer journey</span>
-        <span class="pill">Sales funnels</span>
-        <span class="pill">CRO</span>
-        <span class="pill">Lifecycle marketing</span>
-        <span class="pill">Experimentation</span>
-        <span class="pill">Growth analytics</span>
-      </div>
-      <div class="role-line"><b>Built for the Digital Sales &amp; Marketing Specialist brief:</b> how I would connect Club Soda's social, website, booking, lifecycle and shop activity into one measurable growth system from day one.</div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-render_disclaimer()
+if section == "Growth overview":
+    st.subheader("Where I would focus first")
+    st.markdown('<div class="section-intro">The role is about more than posting content. The biggest opportunity is to make each step — discovery, booking, follow-up and the shop — work together toward a measurable business outcome.</div>', unsafe_allow_html=True)
+    cols=st.columns(3)
+    focus=[("1 · Event conversion","Convert more event interest","Help the right visitor find a relevant event quickly, reduce hesitation and make the path to booking clearer.","Measure: event page → checkout → booking"),("2 · Shop launch","Build demand before launch","Use a shop-specific waitlist and simple launch sequence to learn what people want before the store goes live.","Measure: waitlist → launch engagement → first purchase"),("3 · Retention","Create more repeat customers","Use post-event communication to recommend the next relevant event instead of ending the relationship after one booking.","Measure: 30/60-day repeat booking")]
+    for col,(kicker,title,copy,metric) in zip(cols,focus):
+        with col: st.markdown(f"<div class='focus-card'><div class='card-kicker'>{kicker}</div><div class='card-title'>{title}</div><div class='card-copy'>{copy}</div><div class='card-metric'>{metric}</div></div>", unsafe_allow_html=True)
+    st.markdown("### One connected growth system")
+    st.markdown("""<div class="flow-wrap"><div class="flow-box"><b>Discover</b><span>Social, Meta, TikTok, search</span></div><div class="flow-box"><b>Explore</b><span>Relevant event / product page</span></div><div class="flow-box"><b>Convert</b><span>Booking or purchase</span></div><div class="flow-box"><b>Follow up</b><span>Email + post-event journey</span></div><div class="flow-box"><b>Return</b><span>Next event or shop purchase</span></div></div>""", unsafe_allow_html=True)
+    st.markdown("### What I would watch every week")
+    kpis=st.columns(5)
+    for col,label,value in zip(kpis,["Traffic quality","Event engagement","Booking intent","Conversion","Retention"],["Qualified visits","Event-page CTR","Checkout starts","Completed bookings","Repeat bookings"]):
+        with col: st.markdown(f"<div class='kpi-card'><div class='kpi-label'>{label}</div><div class='kpi-value'>{value}</div></div>", unsafe_allow_html=True)
+    st.markdown("### Why this helps the business")
+    st.markdown("""<div class="impact-box"><b>Simple goal:</b> understand where customers drop off, fix the biggest friction points first, and use the same measurement system to decide which campaigns, pages and follow-ups are worth scaling.</div>""", unsafe_allow_html=True)
 
-
-if section == "Executive overview":
-    st.subheader("What I would optimise first")
-    st.write(
-        "The opportunity is not just to create more content. It is to connect acquisition, event discovery, booking, post-event engagement and the upcoming shop into one measurable customer journey."
-    )
-
-    c1, c2, c3, c4 = st.columns(4)
-    metric_cards = [
-        (c1, "Growth system", "Discover → Repeat"),
-        (c2, "Primary conversion", "Completed booking"),
-        (c3, "Secondary conversion", "Shop waitlist"),
-        (c4, "Retention signal", "Repeat booking"),
-    ]
-    for col, label, value in metric_cards:
-        with col:
-            st.markdown(
-                f"<div class='metric-card'><div class='metric-label'>{label}</div><div class='metric-value'>{value}</div></div>",
-                unsafe_allow_html=True,
-            )
-
-    st.markdown("### Three growth loops")
-    cols = st.columns(3)
-    loops = [
-        (
-            "1 · Event conversion",
-            "Social / search → relevant event page → checkout → booking",
-            "Measure drop-off and remove friction between intent and purchase.",
-        ),
-        (
-            "2 · Post-event retention",
-            "Attendance → follow-up → next relevant event → repeat booking",
-            "Treat the event as the start of a lifecycle, not the end of one.",
-        ),
-        (
-            "3 · Shop launch",
-            "Existing community → waitlist → product reveal → launch → cross-sell",
-            "Validate demand before launch and use owned audiences first.",
-        ),
-    ]
-    for col, (title, flow, copy) in zip(cols, loops):
-        with col:
-            st.markdown(f"**{title}**")
-            st.caption(flow)
-            st.write(copy)
-
-    st.markdown("### Why this approach is credible")
-    st.markdown(
-        """
-        <div class="callout">
-        My prior Data Driven Marketing work used mixed-method consumer research: six in-depth interviews, a survey with 71 valid respondents, conjoint analysis and segment-level preference modelling. A separate customer-analytics assignment segmented a 3,000-customer dataset and extended the analysis into retention and CLV. This prototype applies the same evidence-first mindset to a live growth problem.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("### Decision principle")
-    st.write(
-        "Every marketing activity should answer one of four questions: **Who is this for? What behaviour should change? How will we measure it? What do we do next if it works?**"
-    )
-
-elif section == "Website & journey audit":
-    st.subheader("Public-site observations → measurable opportunities")
-    audit_df = pd.DataFrame(PUBLIC_OBSERVATIONS)
-    st.dataframe(
-        audit_df[["observation", "why_it_matters", "proposed_test", "primary_metric"]],
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "observation": "Public observation",
-            "why_it_matters": "Why it matters",
-            "proposed_test": "What I would test",
-            "primary_metric": "Primary metric",
-        },
-    )
-
-    st.markdown("### Proposed end-to-end journey")
-    steps = [
-        ("1", "Discover", "Instagram / TikTok / Meta / search / referral"),
-        ("2", "Explore", "Location + age-relevant event discovery"),
-        ("3", "Consider", "Event detail, reassurance, social proof, FAQ"),
-        ("4", "Convert", "Checkout and ticket / product purchase"),
-        ("5", "Experience", "Event attendance + post-event connection"),
-        ("6", "Retain", "Next-event recommendation + shop / community"),
-    ]
-    cols = st.columns(3)
-    for i, (num, title, copy) in enumerate(steps):
-        with cols[i % 3]:
-            st.markdown(
-                f"<div class='journey-step'><div class='section-label'>Step {num}</div><b>{title}</b><br><span class='small-note'>{copy}</span></div>",
-                unsafe_allow_html=True,
-            )
-            st.write("")
-
-    st.markdown("### Measurement blueprint")
-    measure_df = pd.DataFrame(MEASUREMENT_EVENTS, columns=["Event", "Definition", "Journey stage"])
-    st.dataframe(measure_df, use_container_width=True, hide_index=True)
-    st.caption(
-        "These are proposed analytics events. The prototype does not claim that Club Soda currently tracks them."
-    )
+elif section == "Website opportunities":
+    st.subheader("Four practical opportunities from the current customer journey")
+    st.markdown('<div class="section-intro">These are deliberately simple: one visible opportunity, one action, one business measure.</div>', unsafe_allow_html=True)
+    opportunities=[("Event discovery","Make relevance obvious sooner","Use location and age / event relevance earlier so visitors can reach the right event faster.","Business benefit: more qualified event-page visits","Primary measure: event-detail click-through rate"),("Event page → checkout","Reduce hesitation before booking","Make 'what to expect', key reassurance and the booking CTA easy to understand without adding clutter.","Business benefit: more checkout starts from the same traffic","Primary measure: begin-checkout rate"),("Shop pre-launch","Capture product demand now","Replace a generic 'coming soon' moment with a shop-specific waitlist that asks what visitors are interested in.","Business benefit: launch to an audience that already showed intent","Primary measure: qualified waitlist signup rate"),("Post-event follow-up","Turn attendance into another booking","Use feedback and next-event recommendations to build a repeat-booking loop after the event.","Business benefit: higher customer lifetime value","Primary measure: 30/60-day repeat booking rate")]
+    for row in [opportunities[:2],opportunities[2:]]:
+        cols=st.columns(2)
+        for col,(kicker,title,copy,benefit,metric) in zip(cols,row):
+            with col: st.markdown(f"<div class='opportunity-card'><div class='card-kicker'>{kicker}</div><div class='card-title'>{title}</div><div class='card-copy'>{copy}</div><div class='card-metric'>{benefit}</div><div class='card-metric'>{metric}</div></div>", unsafe_allow_html=True)
+        st.write("")
+    with st.expander("Measurement detail (for implementation)"):
+        st.dataframe(pd.DataFrame(MEASUREMENT_EVENTS,columns=["Analytics event","What it means","Journey stage"]),use_container_width=True,hide_index=True)
+        st.caption("Proposed event taxonomy only. This prototype does not claim that Club Soda currently tracks these events.")
 
 elif section == "Funnel simulator":
-    st.subheader("Interactive booking & revenue simulator")
-    st.write(
-        "Use this to translate small conversion improvements into commercial impact. All starting values below are synthetic scenario inputs, not company performance data."
-    )
-
-    left, right = st.columns([1, 1])
+    st.subheader("What could small conversion improvements mean commercially?")
+    st.markdown('<div class="section-intro">Change the assumptions below to see how a better event journey could affect bookings and revenue. The numbers are illustrative — the purpose is to show the decision framework, not to predict Club Soda results.</div>', unsafe_allow_html=True)
+    left,right=st.columns(2)
     with left:
-        st.markdown("#### Baseline assumptions")
-        monthly_visitors = st.slider("Monthly website visitors", 1000, 50000, 8000, step=500)
-        event_view_rate = st.slider("Visitor → event/product view", 5, 80, 42) / 100
-        checkout_start_rate = st.slider("View → checkout start", 2, 50, 16) / 100
-        purchase_completion_rate = st.slider("Checkout → purchase", 10, 95, 62) / 100
-        average_order_value = st.slider("Average order value (€)", 10, 120, 32)
-        repeat_booking_rate = st.slider("30-day repeat booking rate", 1, 50, 18) / 100
-
+        st.markdown("#### Current scenario")
+        visitors=st.slider("Monthly website visitors",1000,50000,8000,step=500); event_view=st.slider("Visitors who reach an event / product page",5,80,42)/100; checkout_start=st.slider("Event views that start checkout",2,50,16)/100; purchase_complete=st.slider("Checkouts that complete",10,95,62)/100; aov=st.slider("Average order value (€)",10,120,32); repeat_rate=st.slider("30-day repeat booking rate",1,50,18)/100
     with right:
         st.markdown("#### Improvement scenario")
-        event_view_uplift = st.slider("Relative uplift: event-page engagement", 0, 40, 8) / 100
-        checkout_start_uplift = st.slider("Relative uplift: checkout starts", 0, 40, 10) / 100
-        purchase_completion_uplift = st.slider("Relative uplift: checkout completion", 0, 40, 12) / 100
-        repeat_booking_uplift = st.slider("Relative uplift: repeat bookings", 0, 50, 15) / 100
+        event_uplift=st.slider("Improve event-page engagement",0,40,8)/100; checkout_uplift=st.slider("Improve checkout starts",0,40,10)/100; completion_uplift=st.slider("Improve checkout completion",0,40,12)/100; repeat_uplift=st.slider("Improve repeat bookings",0,50,15)/100
+    result=compare_scenarios(FunnelInputs(monthly_visitors=visitors,event_view_rate=event_view,checkout_start_rate=checkout_start,purchase_completion_rate=purchase_complete,average_order_value=float(aov),repeat_booking_rate=repeat_rate),FunnelUplifts(event_view_uplift=event_uplift,checkout_start_uplift=checkout_uplift,purchase_completion_uplift=completion_uplift,repeat_booking_uplift=repeat_uplift))
+    base,improved,delta=result["baseline"],result["improved"],result["delta"]
+    st.markdown("### Illustrative business impact")
+    m1,m2,m3,m4=st.columns(4); m1.metric("Current bookings",number(base["Purchases"])); m2.metric("Improved bookings",number(improved["Purchases"]),delta=f"+{number(delta['Purchases'])}"); m3.metric("Additional revenue",money(delta["Revenue"])); m4.metric("Additional repeat bookings",number(delta["Repeat bookings"]))
+    labels=["Visitors","Event / product views","Checkout starts","Purchases"]; fig=go.Figure(); fig.add_trace(go.Funnel(name="Current scenario",y=labels,x=[base[x] for x in labels],textinfo="value+percent initial")); fig.add_trace(go.Funnel(name="Improved scenario",y=labels,x=[improved[x] for x in labels],textinfo="value+percent initial")); fig.update_layout(height=440,margin=dict(l=10,r=10,t=35,b=10),legend_title_text=""); st.plotly_chart(fig,use_container_width=True)
+    st.markdown("""<div class="impact-box"><b>How I would use this:</b> identify the largest drop-off, choose one improvement, run a controlled test, and scale only when the data shows a meaningful commercial gain.</div>""", unsafe_allow_html=True)
 
-    baseline_inputs = FunnelInputs(
-        monthly_visitors=monthly_visitors,
-        event_view_rate=event_view_rate,
-        checkout_start_rate=checkout_start_rate,
-        purchase_completion_rate=purchase_completion_rate,
-        average_order_value=float(average_order_value),
-        repeat_booking_rate=repeat_booking_rate,
-    )
-    uplifts = FunnelUplifts(
-        event_view_uplift=event_view_uplift,
-        checkout_start_uplift=checkout_start_uplift,
-        purchase_completion_uplift=purchase_completion_uplift,
-        repeat_booking_uplift=repeat_booking_uplift,
-    )
-    results = compare_scenarios(baseline_inputs, uplifts)
-    base = results["baseline"]
-    improved = results["improved"]
-    delta = results["delta"]
+elif section == "Campaign studio":
+    st.subheader("Campaign ideas designed to end in a measurable action")
+    st.markdown('<div class="section-intro">Content should not stop at engagement. Each campaign should have one audience, one message, one landing experience and one business outcome.</div>', unsafe_allow_html=True)
+    campaign=st.selectbox("Choose an objective",["Fill an upcoming event","Launch the shop waitlist","Recover high-intent visitors","Drive repeat bookings"]); channel=st.selectbox("Primary channel",["Instagram / TikTok","Meta paid social","Email","Cross-channel"])
+    plans={"Fill an upcoming event":{"hook":"Meet people in real life — not just through another app.","story":"Show the atmosphere, what to expect, who the event is for and the practical details that reduce uncertainty.","landing":"Send people directly to the relevant event page rather than a generic homepage.","follow":"Retarget high-intent visitors and follow up with people who opted in but did not book.","metric":"Completed event bookings"},"Launch the shop waitlist":{"hook":"Be first to know when Club Soda's shop goes live.","story":"Preview product categories and ask people what they are most interested in buying.","landing":"A simple product-interest waitlist, not a generic newsletter form.","follow":"Product reveal → early access → launch reminder → first-purchase follow-up.","metric":"Waitlist-to-purchase conversion"},"Recover high-intent visitors":{"hook":"Still thinking about joining? Here is exactly what to expect.","story":"Address the questions that may be stopping a visitor from completing a booking.","landing":"Return them to the relevant event or checkout journey with minimal friction.","follow":"One useful reminder rather than repeated generic messaging.","metric":"Recovered bookings"},"Drive repeat bookings":{"hook":"Ready for your next Club Soda event?","story":"Use the previous event as context and recommend the next relevant option.","landing":"A curated event recommendation based on observable behaviour and location relevance.","follow":"Feedback → recommendation → reminder → booking.","metric":"30/60-day repeat booking rate"}}
+    p=plans[campaign]; st.markdown(f"**Channel:** {channel}"); c1,c2=st.columns(2)
+    with c1: st.markdown("#### Message"); st.markdown(f"**Hook**  \n{p['hook']}"); st.markdown(f"**Creative direction**  \n{p['story']}")
+    with c2: st.markdown("#### Conversion path"); st.markdown(f"**Landing experience**  \n{p['landing']}"); st.markdown(f"**Follow-up**  \n{p['follow']}"); st.markdown(f"**Business measure**  \n{p['metric']}")
+    st.markdown("### Simple short-form content structure")
+    st.dataframe(pd.DataFrame([["0–3 sec","Hook","Give one reason to stop scrolling"],["3–8 sec","Show the experience","Real setting, people, movement, atmosphere"],["8–14 sec","Reduce uncertainty","Who it is for + what to expect"],["14–20 sec","One action","Book, join waitlist or see the relevant event"]],columns=["Timing","Purpose","What the viewer should understand"]),use_container_width=True,hide_index=True)
 
-    st.markdown("### Commercial impact")
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Baseline purchases", fmt_int(base["Purchases"]), delta=fmt_int(delta["Purchases"]))
-    m2.metric("Baseline revenue", fmt_eur(base["Revenue"]), delta=fmt_eur(delta["Revenue"]))
-    m3.metric(
-        "Visitor → purchase",
-        f"{base['Visitor-to-purchase conversion']:.2%}",
-        delta=f"{delta['Visitor-to-purchase conversion']:.2%}",
-    )
-    m4.metric("Repeat bookings", fmt_int(base["Repeat bookings"]), delta=fmt_int(delta["Repeat bookings"]))
+elif section == "Customer journey":
+    st.subheader("Different customers need different next steps")
+    st.markdown('<div class="section-intro">I would keep segmentation practical and behaviour-based: what did the person do, what is the likely next useful step, and what business outcome are we trying to create?</div>', unsafe_allow_html=True)
+    segments=[("New visitor","Browses but has not booked","Explain what Club Soda is and show relevant events","See events near me"),("High-intent visitor","Views the same event / starts checkout","Remove the last reasons not to book","Finish booking"),("Booked attendee","Has an upcoming or recent event","Build confidence, then continue the relationship","Prepare / give feedback"),("Returning customer","Has booked before","Recommend the next relevant event or shop offer","Book again")]
+    cols=st.columns(4)
+    for col,(title,signal,goal,cta) in zip(cols,segments):
+        with col: st.markdown(f"<div class='step-card'><div class='card-title'>{title}</div><div class='card-copy'><b>Signal:</b> {signal}<br><br><b>Next step:</b> {goal}</div><div class='card-metric'>CTA: {cta}</div></div>", unsafe_allow_html=True)
+    st.markdown("### Example post-booking lifecycle")
+    st.dataframe(pd.DataFrame([["Immediately","Booking confirmation","Reduce uncertainty","Event details + what to expect"],["2 days before","Event reminder","Increase attendance","Practical reminder + confidence cues"],["1 day after","Follow-up","Continue engagement","Feedback + post-event tools"],["4–7 days after","Next-event recommendation","Create repeat booking","Relevant event recommendation"]],columns=["When","Touchpoint","Business goal","Content"]),use_container_width=True,hide_index=True)
 
-    funnel_labels = ["Visitors", "Event / product views", "Checkout starts", "Purchases"]
-    fig = go.Figure()
-    fig.add_trace(
-        go.Funnel(
-            name="Baseline",
-            y=funnel_labels,
-            x=[base[x] for x in funnel_labels],
-            textinfo="value+percent initial",
-        )
-    )
-    fig.add_trace(
-        go.Funnel(
-            name="Improved scenario",
-            y=funnel_labels,
-            x=[improved[x] for x in funnel_labels],
-            textinfo="value+percent initial",
-        )
-    )
-    fig.update_layout(height=460, margin=dict(l=10, r=10, t=40, b=10))
-    st.plotly_chart(fig, use_container_width=True)
+elif section == "90-day action plan":
+    st.subheader("First 90 days: measure → test → scale")
+    st.markdown('<div class="section-intro">The first goal would be to create a simple measurement baseline, then test a small number of high-impact changes before scaling what works.</div>', unsafe_allow_html=True)
+    phases=[("Days 1–30","Measure",["Map social → website → event page → checkout → booking","Set clear UTM and analytics naming","Baseline conversion and repeat-booking metrics","Identify the biggest event-page and checkout drop-offs"]),("Days 31–60","Test",["Run one event landing-page / reassurance test","Create shop waitlist MVP","Launch one measurable short-form campaign","Build simple post-event recommendation follow-up"]),("Days 61–90","Scale",["Scale the best-performing campaign / landing journey","Improve lifecycle segmentation","Connect event audiences to the shop launch","Create a weekly growth scorecard for decisions"])]
+    cols=st.columns(3)
+    for col,(period,title,items) in zip(cols,phases):
+        bullets="".join(f"<li>{item}</li>" for item in items)
+        with col: st.markdown(f"<div class='phase-card'><div class='card-kicker'>{period}</div><div class='phase-title'>{title}</div><ul class='card-copy'>{bullets}</ul></div>", unsafe_allow_html=True)
+    st.markdown("### What success should look like")
+    st.markdown("""<div class="impact-box"><b>A simple operating system for growth:</b> everyone can see where demand comes from, where customers drop off, which campaigns create bookings, what improves repeat behaviour, and what should be tested next.</div>""", unsafe_allow_html=True)
+    st.markdown("### Relevant capability I bring")
+    st.write("My MSc Business Analytics work includes Data Driven Marketing, consumer research, conjoint analysis, segmentation, marketing mix modelling and experimentation. I would bring that analytical discipline into a hands-on marketing role without treating the business like an academic exercise.")
 
-    st.markdown("### How I would use this in the role")
-    st.write(
-        "The point is not to forecast revenue from invented data. The point is to make trade-offs explicit: identify the largest drop-off, prioritise one intervention, measure the lift, and then decide whether to scale it."
-    )
-
-elif section == "Segments & lifecycle":
-    st.subheader("Behavioural segments for lifecycle marketing")
-    st.write(
-        "These are proposed activation segments built around observable behaviour — not demographic assumptions."
-    )
-    seg_df = pd.DataFrame(SEGMENTS)
-    st.dataframe(seg_df, use_container_width=True, hide_index=True)
-
-    st.markdown("### Journey playbook")
-    selected = st.selectbox("Choose a proposed segment", [s["segment"] for s in SEGMENTS])
-    item = next(s for s in SEGMENTS if s["segment"] == selected)
-    a, b, c = st.columns(3)
-    a.markdown(f"**Signal**\n\n{item['signal']}")
-    b.markdown(f"**Commercial goal**\n\n{item['goal']}")
-    c.markdown(f"**Primary CTA**\n\n{item['cta']}")
-    st.markdown("**Message strategy**")
-    st.write(item["message"])
-
-    st.markdown("### Example lifecycle sequence")
-    sequence = pd.DataFrame(
-        [
-            ["T+0", "Booking confirmation", "Reduce uncertainty", "Event details + what to expect"],
-            ["T-2 days", "Event reminder", "Increase attendance", "Practical reminder + confidence cues"],
-            ["T+1 day", "Post-event follow-up", "Capture feedback / connection", "Feedback + post-event tools"],
-            ["T+4 days", "Next-event recommendation", "Drive repeat booking", "Location / age-relevant recommendation"],
-            ["T+10 days", "Community / shop touchpoint", "Broaden relationship", "Upcoming events or shop waitlist"],
-        ],
-        columns=["Timing", "Touchpoint", "Goal", "Content"],
-    )
-    st.dataframe(sequence, use_container_width=True, hide_index=True)
-    st.caption("Illustrative lifecycle design; channel frequency should be adapted to consent, engagement and actual customer behaviour.")
-
-elif section == "Campaign lab":
-    st.subheader("Campaign → landing page → measurable action")
-    campaign = st.selectbox(
-        "Campaign objective",
-        ["Fill an upcoming event", "Launch the shop waitlist", "Recover high-intent visitors", "Drive repeat bookings"],
-    )
-    channel = st.selectbox("Primary channel", ["Instagram / TikTok organic", "Meta paid social", "Email", "Cross-channel"])
-
-    templates = {
-        "Fill an upcoming event": {
-            "hook": "Dating apps are not the only way to meet someone new.",
-            "offer": "Show a real-life Club Soda event with a clear location, audience fit and what-to-expect reassurance.",
-            "landing": "Campaign-specific event page with date, location, availability, FAQs and a single booking CTA.",
-            "measure": "Qualified landing visits → begin checkout → completed booking",
-        },
-        "Launch the shop waitlist": {
-            "hook": "Take a piece of the Club Soda experience with you.",
-            "offer": "Preview upcoming merchandise categories and invite people to choose what they are most interested in.",
-            "landing": "Shop waitlist with interest capture rather than a generic newsletter signup.",
-            "measure": "Waitlist conversion → launch email engagement → first purchase",
-        },
-        "Recover high-intent visitors": {
-            "hook": "Still thinking about joining us? Here is exactly what to expect.",
-            "offer": "Address uncertainty and make returning to the booking journey easy.",
-            "landing": "Deep-link back to the relevant event or checkout state where technically possible.",
-            "measure": "Recovered sessions → purchase completion",
-        },
-        "Drive repeat bookings": {
-            "hook": "Your next real-life connection could be at the next event near you.",
-            "offer": "Recommend the next relevant event based on previous participation and location.",
-            "landing": "Curated event recommendation rather than generic homepage traffic.",
-            "measure": "Click-through → repeat booking → 30/60-day repeat rate",
-        },
-    }
-    plan = templates[campaign]
-    st.markdown(f"**Channel:** {channel}")
-    p1, p2 = st.columns(2)
-    with p1:
-        st.markdown("#### Creative brief")
-        st.markdown(f"**Hook**  \n{plan['hook']}")
-        st.markdown(f"**Offer / story**  \n{plan['offer']}")
-    with p2:
-        st.markdown("#### Conversion design")
-        st.markdown(f"**Landing experience**  \n{plan['landing']}")
-        st.markdown(f"**Measurement**  \n{plan['measure']}")
-
-    st.markdown("### Short-form video storyboard")
-    storyboard = pd.DataFrame(
-        [
-            ["0–3s", "Pattern interrupt", "Show the problem / emotional tension quickly"],
-            ["3–8s", "Real experience", "People, setting, movement, genuine interactions"],
-            ["8–14s", "Reassurance", "What to expect + who the event is for"],
-            ["14–20s", "Action", "One clear CTA linked to the campaign landing page"],
-        ],
-        columns=["Timing", "Job", "Creative direction"],
-    )
-    st.dataframe(storyboard, use_container_width=True, hide_index=True)
-
-    st.markdown("### Tracking checklist")
-    st.code(
-        "utm_source=instagram\nutm_medium=paid_social\nutm_campaign=<event_or_shop_launch>\nutm_content=<creative_variant>",
-        language="text",
-    )
-    st.caption("UTM names are illustrative. A real implementation would use one documented naming convention across channels.")
-
-elif section == "Experiment lab":
-    st.subheader("CRO experiment backlog")
-    exp_df = pd.DataFrame(EXPERIMENTS)
-    st.dataframe(exp_df, use_container_width=True, hide_index=True)
-
-    st.markdown("### Quick A/B test sizing")
-    st.write("Planning-only calculator for a binary conversion metric.")
-    a, b = st.columns(2)
-    with a:
-        baseline = st.slider("Baseline conversion rate", 1.0, 50.0, 12.0, step=0.5) / 100
-    with b:
-        relative_lift = st.slider("Minimum relative uplift worth detecting", 5, 50, 15) / 100
-    sample = two_proportion_sample_size(baseline, relative_lift)
-    if sample:
-        st.metric("Approx. sample required per variant", f"{sample:,}")
-        st.caption("Approximation assumes a two-sided 5% significance level and ~80% power. Validate with the production analytics / experimentation stack before launch.")
-    else:
-        st.warning("Choose a baseline and uplift that keep the target conversion between 0% and 100%.")
-
-    st.markdown("### Experiment operating rule")
-    st.write(
-        "One hypothesis → one primary metric → one guardrail → pre-agreed decision rule. Avoid changing a page and a campaign simultaneously if you need to know what caused the result."
-    )
-
-elif section == "90-day plan":
-    st.subheader("First 90 days: build the system, then scale it")
-    for phase in ROADMAP:
-        st.markdown(f"### {phase['phase']}")
-        st.caption(phase["focus"])
-        for item in phase["deliverables"]:
-            st.markdown(f"- {item}")
-
-    st.markdown("### Weekly growth scorecard")
-    scorecard = pd.DataFrame(
-        [
-            ["Acquisition", "Qualified landing sessions", "Are campaigns bringing the right people?"],
-            ["Engagement", "Event-detail CTR", "Can visitors find something relevant quickly?"],
-            ["Intent", "Begin-checkout rate", "Does the event page create enough confidence to act?"],
-            ["Conversion", "Checkout completion", "Where is late-stage friction?"],
-            ["Economics", "CAC / revenue contribution", "Are paid channels commercially sensible?"],
-            ["Retention", "30/60-day repeat booking", "Are we building a relationship, not one-off transactions?"],
-            ["Shop", "Waitlist → first purchase", "Is launch demand translating into revenue?"],
-        ],
-        columns=["Stage", "Metric", "Decision question"],
-    )
-    st.dataframe(scorecard, use_container_width=True, hide_index=True)
-
-elif section == "Methods & sources":
-    st.subheader("Methodology")
-    st.write(
-        "This prototype deliberately separates **observations** (what is visible on the public website), **proposals** (what I would build or test) and **synthetic scenarios** (illustrative numbers used in calculators)."
-    )
-    method_df = pd.DataFrame(
-        [
-            ["Public observation", "Club Soda website", "Describe the current customer-facing experience"],
-            ["Proposed strategy", "Independent analysis", "Show how I would approach the role"],
-            ["Synthetic data", "Generated scenario inputs", "Demonstrate funnel economics without inventing company results"],
-            ["Prior research evidence", "My Data Driven Marketing coursework", "Demonstrate consumer-research and segmentation capability"],
-        ],
-        columns=["Layer", "Basis", "Purpose"],
-    )
-    st.dataframe(method_df, use_container_width=True, hide_index=True)
-
-    st.markdown("### Public sources reviewed")
-    seen = set()
-    for item in PUBLIC_OBSERVATIONS:
-        if item["source"] not in seen:
-            st.markdown(f"- {item['source']}")
-            seen.add(item["source"])
-
-    st.markdown("### Relevant prior consumer-research evidence")
-    st.write(
-        "In my Data Driven Marketing coursework, a sustainable-backpack preference study combined six semi-structured interviews with a 71-respondent cleaned survey, conjoint analysis and sustainability-based segmentation. A separate customer-analytics assignment used a 3,000-customer dataset for descriptive analysis, correlation, segmentation, retention inputs and segment-level CLV modelling."
-    )
-
-    st.markdown("### What this prototype does not claim")
-    st.markdown(
-        "- It does not claim access to Club Soda's GA4, CRM, Shopify, Meta Ads or email-platform data.\n"
-        "- It does not claim that any proposed uplift has already been achieved.\n"
-        "- It does not reproduce private customer data or infer sensitive attributes.\n"
-        "- It is not affiliated with or commissioned by Club Soda."
-    )
-
-st.markdown(
-    """
-    <div class="footer">
-    <b>Abhishek Kumar</b> · Independent portfolio case study · Built for demonstration of digital sales, marketing analytics and customer-journey thinking.<br>
-    Public-site observations were reviewed from Club Soda's website. All numeric performance scenarios in this app are synthetic.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+st.markdown("""<div class="footer"><b>Abhishek Kumar</b> · Independent portfolio case study for the Club Soda Digital Sales &amp; Marketing Specialist opportunity. Public-site observations are separated from proposed strategy, and all simulator performance numbers are synthetic.</div>""", unsafe_allow_html=True)
