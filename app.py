@@ -14,7 +14,7 @@ CUSTOM_CSS = """
 .block-container{padding-top:1.55rem;padding-bottom:3rem;max-width:1220px}h1,h2,h3{letter-spacing:-.025em}[data-testid="stSidebar"]{border-right:1px solid rgba(120,120,120,.12)}
 .hero{padding:2.15rem 2.25rem;border:1px solid rgba(100,100,130,.16);border-radius:24px;background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(20,184,166,.09));margin-bottom:1.15rem}.hero-kicker{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;opacity:.62}.hero-title{font-size:2.55rem;line-height:1.03;font-weight:820;margin:.45rem 0 .55rem}.hero-copy{font-size:1.05rem;line-height:1.65;max-width:900px;opacity:.86}.role-badge{display:inline-block;margin-top:1rem;padding:.42rem .72rem;border-radius:999px;background:rgba(255,255,255,.72);border:1px solid rgba(100,100,130,.14);font-size:.84rem;font-weight:700}.micro-note{font-size:.76rem;opacity:.58;margin:.35rem 0 1.15rem}
 .focus-card,.opportunity-card,.step-card{padding:1.05rem 1.08rem;border:1px solid rgba(120,120,120,.16);border-radius:18px;background:rgba(255,255,255,.76);height:100%}.card-kicker{font-size:.70rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.54;margin-bottom:.42rem}.card-title{font-size:1.08rem;line-height:1.2;font-weight:780;margin-bottom:.45rem}.card-copy{font-size:.91rem;line-height:1.55;opacity:.78}.card-metric{font-size:.80rem;font-weight:700;margin-top:.75rem;opacity:.72}
-.flow-wrap{display:flex;gap:.55rem;align-items:stretch;margin:.55rem 0 1rem}.flow-box{flex:1;padding:.82rem .8rem;border:1px solid rgba(120,120,120,.14);border-radius:14px;background:rgba(124,58,237,.045);text-align:center;min-width:0}.flow-box b{font-size:.91rem}.flow-box span{display:block;margin-top:.22rem;font-size:.73rem;opacity:.60;line-height:1.35}.kpi-card{padding:.85rem .95rem;border:1px solid rgba(120,120,120,.14);border-radius:15px;background:rgba(255,255,255,.70);min-height:88px}.kpi-label{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;opacity:.50}.kpi-value{font-size:.98rem;font-weight:760;margin-top:.32rem;line-height:1.2}.impact-box{padding:1rem 1.1rem;border-radius:16px;background:linear-gradient(135deg,rgba(20,184,166,.09),rgba(124,58,237,.06));border:1px solid rgba(20,184,166,.16)}.phase-card{padding:1.05rem;border:1px solid rgba(120,120,120,.15);border-radius:17px;min-height:265px;background:rgba(255,255,255,.74)}.phase-title{font-size:1.02rem;font-weight:800;margin-bottom:.2rem}.section-intro{max-width:900px;font-size:.96rem;line-height:1.55;opacity:.80;margin-bottom:1rem}.footer{margin-top:2.6rem;padding-top:1rem;border-top:1px solid rgba(120,120,120,.14);font-size:.80rem;opacity:.62}
+.flow-wrap{display:flex;gap:.55rem;align-items:stretch;margin:.55rem 0 1rem}.flow-box{flex:1;padding:.82rem .8rem;border:1px solid rgba(120,120,120,.14);border-radius:14px;background:rgba(124,58,237,.045);text-align:center;min-width:0}.flow-box b{font-size:.91rem}.flow-box span{display:block;margin-top:.22rem;font-size:.73rem;opacity:.60;line-height:1.35}.kpi-card{padding:.85rem .95rem;border:1px solid rgba(120,120,120,.14);border-radius:15px;background:rgba(255,255,255,.70);min-height:88px}.kpi-label{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;opacity:.50}.kpi-value{font-size:.98rem;font-weight:760;margin-top:.32rem;line-height:1.2}.impact-box{padding:1rem 1.1rem;border-radius:16px;background:linear-gradient(135deg,rgba(20,184,166,.09),rgba(124,58,237,.06));border:1px solid rgba(20,184,166,.16)}.impact-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.9rem}.impact-stat{padding:.82rem .9rem;border:1px solid rgba(120,120,120,.15);border-radius:15px;background:rgba(255,255,255,.72)}.impact-stat.accent{background:rgba(109,93,251,.07);border-color:rgba(109,93,251,.18)}.impact-stat.wide{grid-column:1/-1;background:linear-gradient(135deg,rgba(20,184,166,.08),rgba(109,93,251,.05));border-color:rgba(20,184,166,.15)}.impact-stat-label{font-size:.69rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;opacity:.52}.impact-stat-value{font-size:1.75rem;font-weight:780;letter-spacing:-.035em;line-height:1.1;margin-top:.28rem}.impact-stat-delta{display:inline-block;margin-top:.38rem;padding:.16rem .43rem;border-radius:999px;background:rgba(22,163,74,.10);color:#16834a;font-size:.72rem;font-weight:800}.impact-note{font-size:.71rem;line-height:1.45;opacity:.52;margin-top:.65rem}.phase-card{padding:1.05rem;border:1px solid rgba(120,120,120,.15);border-radius:17px;min-height:265px;background:rgba(255,255,255,.74)}.phase-title{font-size:1.02rem;font-weight:800;margin-bottom:.2rem}.section-intro{max-width:900px;font-size:.96rem;line-height:1.55;opacity:.80;margin-bottom:1rem}.footer{margin-top:2.6rem;padding-top:1rem;border-top:1px solid rgba(120,120,120,.14);font-size:.80rem;opacity:.62}
 @media(max-width:900px){.flow-wrap{display:grid;grid-template-columns:1fr 1fr}.hero-title{font-size:2rem}}
 </style>
 """
@@ -48,10 +48,10 @@ if section == "Growth overview":
         with col: st.markdown(f"<div class='focus-card'><div class='card-kicker'>{kicker}</div><div class='card-title'>{title}</div><div class='card-copy'>{copy}</div><div class='card-metric'>{metric}</div></div>", unsafe_allow_html=True)
 
     st.markdown("### See the value of improving the journey")
-    st.markdown('<div class="section-intro">A small improvement at the high-intent stages can create more bookings without needing more traffic. Move the slider to see the effect on an illustrative 1,000-visitor journey.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-intro">Small conversion gains can create more bookings without more traffic. Adjust the slider to see an illustrative 1,000-visitor scenario.</div>', unsafe_allow_html=True)
     chart_col, impact_col = st.columns([1.35, 1])
     with impact_col:
-        home_uplift = st.slider("Improve checkout + purchase conversion by", 0, 20, 10, step=1, format="%d%%", key="home_conversion_uplift") / 100
+        home_uplift = st.slider("Improve checkout + purchase conversion", 0, 20, 10, step=1, format="%d%%", key="home_conversion_uplift") / 100
         home_result = compare_scenarios(
             FunnelInputs(
                 monthly_visitors=1000,
@@ -69,30 +69,68 @@ if section == "Growth overview":
             ),
         )
         hb, hi, hd = home_result["baseline"], home_result["improved"], home_result["delta"]
-        m1, m2 = st.columns(2)
-        m1.metric("Current bookings", number(hb["Purchases"]))
-        m2.metric("Improved bookings", number(hi["Purchases"]), delta=f"+{number(hd['Purchases'])}")
-        st.metric("Illustrative additional revenue", money(hd["Revenue"]))
-        st.caption("Synthetic scenario for demonstration only — not Club Soda performance data.")
+        st.markdown(
+            f"""
+            <div class="impact-grid">
+              <div class="impact-stat">
+                <div class="impact-stat-label">Current bookings</div>
+                <div class="impact-stat-value">{number(hb["Purchases"])}</div>
+              </div>
+              <div class="impact-stat accent">
+                <div class="impact-stat-label">Improved bookings</div>
+                <div class="impact-stat-value">{number(hi["Purchases"])}</div>
+                <div class="impact-stat-delta">+{number(hd["Purchases"])} bookings</div>
+              </div>
+              <div class="impact-stat wide">
+                <div class="impact-stat-label">Potential additional revenue</div>
+                <div class="impact-stat-value">{money(hd["Revenue"])}</div>
+              </div>
+            </div>
+            <div class="impact-note">Illustrative scenario only · synthetic inputs · not Club Soda performance data.</div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     with chart_col:
-        home_chart = go.Figure(
-            data=[
-                go.Bar(
-                    x=["Current journey", "Improved journey"],
-                    y=[hb["Purchases"], hi["Purchases"]],
-                    text=[number(hb["Purchases"]), number(hi["Purchases"])],
-                    textposition="outside",
-                    hovertemplate="%{x}: %{y:.0f} bookings<extra></extra>",
-                )
-            ]
+        home_chart = go.Figure()
+        home_chart.add_trace(
+            go.Bar(
+                x=["Current journey"],
+                y=[hb["Purchases"]],
+                text=[f'{number(hb["Purchases"])} bookings'],
+                textposition="outside",
+                marker_color="#D8D6E4",
+                hovertemplate="Current journey: %{y:.0f} bookings<extra></extra>",
+            )
+        )
+        home_chart.add_trace(
+            go.Bar(
+                x=["Improved journey"],
+                y=[hi["Purchases"]],
+                text=[f'{number(hi["Purchases"])} bookings'],
+                textposition="outside",
+                marker_color="#6D5DFB",
+                hovertemplate="Improved journey: %{y:.0f} bookings<extra></extra>",
+            )
         )
         home_chart.update_layout(
-            height=285,
-            margin=dict(l=10, r=10, t=18, b=10),
-            yaxis_title="Bookings per 1,000 visitors",
+            height=290,
+            margin=dict(l=8, r=8, t=24, b=8),
+            yaxis_title="Bookings",
             xaxis_title="",
             showlegend=False,
+            bargap=0.38,
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(size=12, color="#34333D"),
+            yaxis=dict(
+                gridcolor="rgba(100,100,120,.10)",
+                zeroline=False,
+                rangemode="tozero",
+                range=[0, max(hi["Purchases"], hb["Purchases"]) * 1.28],
+                title_standoff=8,
+            ),
+            xaxis=dict(showgrid=False, tickfont=dict(color="#6B6874")),
         )
         st.plotly_chart(home_chart, use_container_width=True, config={"displayModeBar": False})
 
