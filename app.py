@@ -45,7 +45,11 @@ CUSTOM_CSS = """
     .small-note {font-size: .82rem; opacity:.72;}
     .journey-step {padding:.85rem 1rem; border-radius:14px; border:1px solid rgba(120,120,120,.2); min-height:110px;}
     .section-label {font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; opacity:.62; margin-bottom:.2rem;}
-    .metric-card {padding: 1rem; border:1px solid rgba(120,120,120,.2); border-radius:16px;}
+    .metric-card {padding: 1rem 1.05rem; border:1px solid rgba(120,120,120,.18); border-radius:16px; background:rgba(255,255,255,.72); min-height:104px;}
+    .metric-label {font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; opacity:.58; margin-bottom:.45rem;}
+    .metric-value {font-size:1.22rem; line-height:1.18; font-weight:760; letter-spacing:-.02em; overflow-wrap:anywhere;}
+    .role-line {margin-top:1.05rem; padding-top:.9rem; border-top:1px solid rgba(90,90,120,.15); font-size:.92rem; opacity:.86;}
+    .case-note {padding:.58rem .78rem; border:1px solid rgba(120,120,120,.14); background:rgba(120,120,120,.045); border-radius:10px; font-size:.80rem; opacity:.76; margin:.15rem 0 1.25rem 0;}
     .footer {margin-top:3rem; padding-top:1.2rem; border-top:1px solid rgba(120,120,120,.2); font-size:.85rem; opacity:.74;}
 </style>
 """
@@ -61,9 +65,13 @@ def fmt_eur(value: float) -> str:
 
 
 def render_disclaimer() -> None:
-    st.info(
-        "Independent portfolio prototype built from publicly available Club Soda website information and synthetic demonstration data. "
-        "No internal Club Soda analytics, ad-account data or customer data is used."
+    st.markdown(
+        """
+        <div class="case-note">
+        Independent portfolio case study using public Club Soda information and synthetic demonstration data. No internal analytics, ad-account or customer data is used.
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
 
@@ -87,7 +95,7 @@ with st.sidebar:
     st.divider()
     st.markdown("**Built by Abhishek Kumar**")
     st.caption("MSc Business Analytics · consumer research · growth analytics · experimentation")
-    st.markdown("[GitHub](https://github.com/iamabhishek841) · [LinkedIn](https://www.linkedin.com/in/iamabhishek841)")
+    st.markdown("[View source](https://github.com/iamabhishek841/club-soda-growth-lab) · [LinkedIn](https://www.linkedin.com/in/iamabhishek841)")
 
 
 st.markdown(
@@ -104,6 +112,7 @@ st.markdown(
         <span class="pill">Experimentation</span>
         <span class="pill">Growth analytics</span>
       </div>
+      <div class="role-line"><b>Built for the Digital Sales &amp; Marketing Specialist brief:</b> how I would connect Club Soda's social, website, booking, lifecycle and shop activity into one measurable growth system from day one.</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -118,10 +127,18 @@ if section == "Executive overview":
     )
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Growth system", "Acquisition → repeat")
-    c2.metric("Primary conversion", "Completed booking")
-    c3.metric("Secondary conversion", "Shop waitlist")
-    c4.metric("Retention signal", "Repeat booking")
+    metric_cards = [
+        (c1, "Growth system", "Discover → Repeat"),
+        (c2, "Primary conversion", "Completed booking"),
+        (c3, "Secondary conversion", "Shop waitlist"),
+        (c4, "Retention signal", "Repeat booking"),
+    ]
+    for col, label, value in metric_cards:
+        with col:
+            st.markdown(
+                f"<div class='metric-card'><div class='metric-label'>{label}</div><div class='metric-value'>{value}</div></div>",
+                unsafe_allow_html=True,
+            )
 
     st.markdown("### Three growth loops")
     cols = st.columns(3)
