@@ -9,16 +9,16 @@ This project shows how I would approach the **Part-Time Digital Sales and Market
 
 ## What the app demonstrates
 
-- Public-site customer journey audit
-- End-to-end measurement blueprint
-- Interactive booking and revenue funnel simulator
-- Behavioural segmentation and lifecycle messaging
-- Campaign-to-landing-page planning
-- Short-form content storyboard
-- Shop waitlist / launch strategy
-- CRO experiment backlog
-- Approximate A/B-test sizing
-- 90-day execution roadmap and weekly growth scorecard
+The app is intentionally simple and business-facing:
+
+- **Growth overview** — three priorities: event conversion, shop demand and repeat bookings
+- **Website opportunities** — clear actions tied to a business benefit and metric
+- **Funnel simulator** — illustrative impact of improving conversion at key stages
+- **Campaign studio** — event, shop, recovery and repeat-booking campaign ideas
+- **Customer journey** — practical behaviour-based next steps and lifecycle follow-up
+- **90-day action plan** — measure, test and scale
+
+Technical measurement detail is kept secondary so the main experience stays easy to understand for a business user.
 
 ## Core idea
 
