@@ -46,6 +46,56 @@ if section == "Growth overview":
     focus=[("1 · Event conversion","Convert more event interest","Help the right visitor find a relevant event quickly, reduce hesitation and make the path to booking clearer.","Measure: event page → checkout → booking"),("2 · Shop launch","Build demand before launch","Use a shop-specific waitlist and simple launch sequence to learn what people want before the store goes live.","Measure: waitlist → launch engagement → first purchase"),("3 · Retention","Create more repeat customers","Use post-event communication to recommend the next relevant event instead of ending the relationship after one booking.","Measure: 30/60-day repeat booking")]
     for col,(kicker,title,copy,metric) in zip(cols,focus):
         with col: st.markdown(f"<div class='focus-card'><div class='card-kicker'>{kicker}</div><div class='card-title'>{title}</div><div class='card-copy'>{copy}</div><div class='card-metric'>{metric}</div></div>", unsafe_allow_html=True)
+
+    st.markdown("### See the value of improving the journey")
+    st.markdown('<div class="section-intro">A small improvement at the high-intent stages can create more bookings without needing more traffic. Move the slider to see the effect on an illustrative 1,000-visitor journey.</div>', unsafe_allow_html=True)
+    chart_col, impact_col = st.columns([1.35, 1])
+    with impact_col:
+        home_uplift = st.slider("Improve checkout + purchase conversion by", 0, 20, 10, step=1, format="%d%%", key="home_conversion_uplift") / 100
+        home_result = compare_scenarios(
+            FunnelInputs(
+                monthly_visitors=1000,
+                event_view_rate=0.42,
+                checkout_start_rate=0.16,
+                purchase_completion_rate=0.62,
+                average_order_value=32.0,
+                repeat_booking_rate=0.18,
+            ),
+            FunnelUplifts(
+                event_view_uplift=0.0,
+                checkout_start_uplift=home_uplift,
+                purchase_completion_uplift=home_uplift,
+                repeat_booking_uplift=0.0,
+            ),
+        )
+        hb, hi, hd = home_result["baseline"], home_result["improved"], home_result["delta"]
+        m1, m2 = st.columns(2)
+        m1.metric("Current bookings", number(hb["Purchases"]))
+        m2.metric("Improved bookings", number(hi["Purchases"]), delta=f"+{number(hd['Purchases'])}")
+        st.metric("Illustrative additional revenue", money(hd["Revenue"]))
+        st.caption("Synthetic scenario for demonstration only — not Club Soda performance data.")
+
+    with chart_col:
+        home_chart = go.Figure(
+            data=[
+                go.Bar(
+                    x=["Current journey", "Improved journey"],
+                    y=[hb["Purchases"], hi["Purchases"]],
+                    text=[number(hb["Purchases"]), number(hi["Purchases"])],
+                    textposition="outside",
+                    hovertemplate="%{x}: %{y:.0f} bookings<extra></extra>",
+                )
+            ]
+        )
+        home_chart.update_layout(
+            height=285,
+            margin=dict(l=10, r=10, t=18, b=10),
+            yaxis_title="Bookings per 1,000 visitors",
+            xaxis_title="",
+            showlegend=False,
+        )
+        st.plotly_chart(home_chart, use_container_width=True, config={"displayModeBar": False})
+
     st.markdown("### One connected growth system")
     st.markdown("""<div class="flow-wrap"><div class="flow-box"><b>Discover</b><span>Social, Meta, TikTok, search</span></div><div class="flow-box"><b>Explore</b><span>Relevant event / product page</span></div><div class="flow-box"><b>Convert</b><span>Booking or purchase</span></div><div class="flow-box"><b>Follow up</b><span>Email + post-event journey</span></div><div class="flow-box"><b>Return</b><span>Next event or shop purchase</span></div></div>""", unsafe_allow_html=True)
     st.markdown("### What I would watch every week")
