@@ -1,3 +1,4 @@
+Live Demo: https://club-soda-growth-lab.streamlit.app/
 # Club Soda Growth Lab
 
 **Independent digital sales, customer journey and conversion optimisation portfolio prototype**
