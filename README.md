@@ -37,9 +37,7 @@ My MSc Business Analytics work includes **Data Driven Marketing** and consumer a
 - conjoint analysis
 - segment-level preference analysis
 
-A separate marketing mix modelling project used **200 weekly observations** with geometric adstock, Hill saturation and trend/seasonality controls, then extended the analysis with Google Meridian Bayesian MMM to examine channel contribution, ROI and response curves.
-
-This project applies that evidence-first approach to a live digital-growth problem.
+This project applies the same evidence-first approach to a live digital-growth problem: start with observable customer behaviour, form a clear hypothesis, define a measurable outcome and test practical improvements.
 
 ## Public Club Soda observations used
 
