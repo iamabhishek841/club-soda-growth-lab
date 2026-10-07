@@ -1,49 +1,158 @@
-Live Demo: https://club-soda-growth-lab.streamlit.app/
 # Club Soda Growth Lab
 
-**Independent digital sales, customer journey and conversion optimisation portfolio prototype**
+**Digital sales, customer journey and conversion optimisation prototype for Club Soda**
 
-This project shows how I would approach the **Part-Time Digital Sales and Marketing Specialist** brief for Club Soda: connect acquisition, event discovery, booking, post-event engagement and the upcoming online shop into one measurable growth system.
+[Live Demo](https://club-soda-growth-lab.streamlit.app/)
 
-> **Important:** This is an independent portfolio case study. It uses publicly available Club Soda website information and **synthetic demonstration data**. I do not have access to Club Soda's internal analytics, CRM, ad accounts, customer data or sales performance.
+Club Soda Growth Lab is an independent Streamlit case study that models how acquisition, event discovery, booking, post-event follow-up and the upcoming shop can be treated as one measurable growth journey.
 
-## What the app demonstrates
+> **Data disclaimer**
+>
+> This repository does **not** use Club Soda internal analytics, CRM data, ad-account data, customer records or sales results. Public Club Soda website information is used only for business context. All numerical performance inputs and outputs in the simulator are **synthetic / illustrative** and must not be interpreted as actual Club Soda performance or forecasts.
 
-The app is intentionally simple and business-facing:
+## Product goal
 
-- **Growth overview** — three priorities: event conversion, shop demand and repeat bookings
-- **Website opportunities** — clear actions tied to a business benefit and metric
-- **Funnel simulator** — illustrative impact of improving conversion at key stages
-- **Campaign studio** — event, shop, recovery and repeat-booking campaign ideas
-- **Customer journey** — practical behaviour-based next steps and lifecycle follow-up
-- **90-day action plan** — measure, test and scale
+The prototype is built around one simple question:
 
-Technical measurement detail is kept secondary so the main experience stays easy to understand for a business user.
+**How can more existing interest be converted into bookings, future shop sales and repeat customers?**
 
-## Core idea
+The app keeps the commercial journey visible from end to end:
 
-Instead of treating social content, paid advertising, email, the website and the shop as separate tasks, the prototype treats them as one connected journey:
+```text
+Discover → Explore → Booking intent → Purchase → Follow-up → Repeat
+```
 
-**Discover → Explore → Consider → Book / Buy → Experience → Return**
+Rather than optimising isolated vanity metrics, each section connects an action to a measurable customer behaviour.
 
-Every recommendation is tied to a measurable behaviour and a decision metric.
+## App sections
 
-## Why this is relevant to my background
+| Section | Purpose |
+| --- | --- |
+| **Growth overview** | Highlights event conversion, shop-launch demand and retention as the three main growth priorities. |
+| **Website opportunities** | Maps visible journey opportunities to one practical action and one primary measure. |
+| **Funnel simulator** | Compares a synthetic baseline with an improved scenario to show how changes at funnel stages can affect bookings and revenue. |
+| **Campaign studio** | Connects campaign objective, message, creative direction, landing experience, follow-up and business measure. |
+| **Customer journey** | Uses simple behaviour-based customer states to define the next useful action. |
+| **90-day action plan** | Organises implementation into **Measure → Test → Scale**. |
 
-My MSc Business Analytics work includes **Data Driven Marketing** and consumer analytics. In a sustainable-backpack preference study, my group combined:
+## Architecture
 
-- 6 semi-structured consumer interviews
-- a cleaned survey with 71 valid respondents
-- conjoint analysis
-- segment-level preference analysis
+```mermaid
+flowchart LR
+    A[Public Club Soda website observations] --> B[src/content.py]
+    B -->|MEASUREMENT_EVENTS| C[app.py]
 
-This project applies the same evidence-first approach to a live digital-growth problem: start with observable customer behaviour, form a clear hypothesis, define a measurable outcome and test practical improvements.
+    D[Synthetic / user-controlled funnel inputs] --> E[src/growth_model.py]
+    E --> F[Baseline scenario]
+    E --> G[Improved scenario]
+    F --> H[compare_scenarios]
+    G --> H
+    H --> C
 
-## Public Club Soda observations used
+    C --> I[Growth overview]
+    C --> J[Website opportunities]
+    C --> K[Funnel simulator]
+    C --> L[Campaign studio]
+    C --> M[Customer journey]
+    C --> N[90-day action plan]
 
-The app separates what is publicly observable from what I am proposing.
+    O[tests/test_growth_model.py] --> E
+```
 
-Public pages reviewed:
+### Code responsibilities
+
+- **`app.py`** — Streamlit interface, page navigation, visualisations, scenario controls and business-facing content.
+- **`src/growth_model.py`** — reusable funnel calculations, uplift application, baseline/improved comparison and an approximate two-proportion sample-size utility.
+- **`src/content.py`** — structured public observations, proposed measurement events, segments, experiments and roadmap content. The current UI directly imports the proposed `MEASUREMENT_EVENTS` taxonomy; the remaining structures are retained as reusable strategy definitions.
+- **`tests/test_growth_model.py`** — validates core funnel arithmetic, non-decreasing positive-uplift scenarios and sample-size output.
+- **`.streamlit/config.toml`** — Streamlit theme and server configuration.
+
+## Funnel model
+
+The core simulator is intentionally simple and transparent.
+
+For a baseline scenario:
+
+```text
+Event / product views = Visitors × Event-view rate
+
+Checkout starts = Event / product views × Checkout-start rate
+
+Purchases = Checkout starts × Purchase-completion rate
+
+Revenue = Purchases × Average order value
+
+Repeat bookings = Purchases × Repeat-booking rate
+```
+
+The app then creates an improved scenario by applying relative uplifts to selected rates and compares the result with the baseline.
+
+### Relative uplift is not percentage-point uplift
+
+Simulator improvement controls apply **relative changes**.
+
+For example:
+
+```text
+16% checkout-start rate
++ 10% relative uplift
+= 17.6%
+```
+
+It does **not** mean 16% becomes 26%.
+
+When the same relative uplift is applied to more than one funnel stage, the effects compound through the funnel.
+
+## Synthetic demonstration inputs
+
+The application contains default values so the simulator works without any private company data.
+
+Examples used in the code include:
+
+| Input | Illustrative default |
+| --- | ---: |
+| Monthly visitors | 8,000 |
+| Event / product-page reach | 42% |
+| Checkout-start rate | 16% |
+| Purchase-completion rate | 62% |
+| Average order value | €32 |
+| 30-day repeat-booking rate | 18% |
+
+The Growth Overview uses a separate simplified **1,000-visitor** scenario for quick visual explanation.
+
+These values are **demonstration assumptions only**. They are not estimates of Club Soda's real traffic, conversion rate, order value, repeat rate or revenue.
+
+### What the revenue output means
+
+The headline revenue calculation is:
+
+```text
+Purchases × Average order value
+```
+
+Repeat bookings and repeat revenue are calculated separately in the model. The app does not present the simulator as a customer-lifetime-value model.
+
+## Measurement design
+
+The prototype includes a proposed event taxonomy for implementation:
+
+```text
+view_home
+view_event
+select_event
+begin_checkout
+purchase
+newsletter_signup
+shop_waitlist_signup
+post_event_engagement
+repeat_booking
+```
+
+This is a **proposed measurement structure**, not a claim about Club Soda's current analytics implementation.
+
+## Public website context
+
+The case study was informed by publicly accessible Club Soda pages:
 
 - https://www.clubsoda.ie/
 - https://www.clubsoda.ie/events/
@@ -51,32 +160,24 @@ Public pages reviewed:
 - https://www.clubsoda.ie/events/faq-s/
 - https://www.clubsoda.ie/terms-of-service/
 
-Examples of source-backed observations include:
+The code separates public observations from proposed strategy and synthetic numerical scenarios.
 
-- Club Soda promotes ticketed events across multiple Irish locations and age groups.
-- Website registration is part of the event booking flow and booking confirmation is sent by email.
-- The public Club Soda Shop page is currently marked **Coming Soon** and points users toward newsletter / social updates.
-- Club Soda describes post-event connection tools including a 7-day social group and a mutual-match process.
-- The brand proposition is strongly centred on real-life connection, confidence, friendship and a welcoming experience.
+## Technology
 
-Everything beyond those observations is presented as an **independent proposal** or a **synthetic scenario**.
+- Python
+- Streamlit
+- Pandas
+- Plotly
+- Python dataclasses
+- Pytest-compatible unit tests
 
-## Run locally
+Runtime dependencies are pinned by range in `requirements.txt`:
 
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
-pip install -r requirements.txt
-streamlit run app.py
+```text
+streamlit>=1.40,<2
+pandas>=2.2,<3
+plotly>=5.24,<7
 ```
-
-## Deploy on Streamlit Community Cloud
-
-1. Push this repository to GitHub.
-2. In Streamlit Community Cloud choose **New app**.
-3. Select the repository and branch.
-4. Set the main file path to `app.py`.
-5. Deploy. No secrets are required.
 
 ## Repository structure
 
@@ -84,6 +185,7 @@ streamlit run app.py
 club-soda-growth-lab/
 ├── app.py
 ├── src/
+│   ├── __init__.py
 │   ├── content.py
 │   └── growth_model.py
 ├── tests/
@@ -95,21 +197,70 @@ club-soda-growth-lab/
 └── README.md
 ```
 
+## Run locally
+
+```bash
+git clone https://github.com/iamabhishek841/club-soda-growth-lab.git
+cd club-soda-growth-lab
+
+python -m venv .venv
+source .venv/bin/activate
+# Windows: .venv\Scripts\activate
+
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+## Run the tests
+
+Pytest is only required for development/testing and is not part of the Streamlit runtime requirements.
+
+```bash
+pip install pytest
+pytest -q
+```
+
+Current tests cover:
+
+1. Core funnel arithmetic.
+2. Positive uplift scenarios do not reduce bookings or revenue.
+3. The two-proportion sample-size helper returns a positive planning value for a valid case.
+
+## Deployment
+
+The app is designed for Streamlit Community Cloud:
+
+1. Select this GitHub repository.
+2. Use the `main` branch.
+3. Set the main file path to `app.py`.
+4. Deploy.
+
+No application secrets are required by the current code.
+
 ## Design principles
 
-1. **No invented company results** — commercial numbers are explicitly synthetic.
-2. **Behaviour before vanity metrics** — optimise booking, repeat use and qualified demand, not impressions alone.
-3. **Segmentation based on observable behaviour** — avoid unnecessary personal inference.
-4. **One hypothesis, one primary metric** — make experiments interpretable.
-5. **Owned audience matters** — connect events, lifecycle messaging and the future shop.
-6. **Uplifts are relative, not percentage points** — simulator improvement controls apply relative changes to the selected funnel rates.
+1. **No invented company results** — simulator values are explicitly synthetic.
+2. **Transparent calculations** — the funnel math is small, inspectable and reusable.
+3. **Behaviour before vanity metrics** — focus on booking intent, purchases and repeat behaviour.
+4. **Practical segmentation** — customer states are based on observable behaviour rather than unnecessary personal inference.
+5. **Measure before scaling** — proposed actions are tied to a measurable outcome.
+6. **Relative uplifts are explicit** — improvement controls modify rates relatively, not by percentage points.
+7. **Business-facing first** — technical detail supports the decision rather than dominating the interface.
 
-## Builder
+## Scope and limitations
 
-**Abhishek Kumar**  
-MSc Business Analytics, Maynooth University  
-GitHub: https://github.com/iamabhishek841  
-LinkedIn: https://www.linkedin.com/in/iamabhishek841
+This is a portfolio prototype, not a production marketing platform.
+
+It does not currently connect to:
+
+- live Club Soda analytics
+- advertising platforms
+- CRM or email systems
+- payment or booking APIs
+- customer databases
+- real-time campaign or revenue data
+
+A production implementation would replace synthetic assumptions with validated first-party data and connect measurement to the actual marketing, booking and lifecycle systems in use.
 
 ---
 
