@@ -52,8 +52,7 @@
   <text x="540" y="436" class="small">calculate_funnel()</text>
   <text x="540" y="466" class="small">apply_uplifts()</text>
   <text x="540" y="496" class="small">compare_scenarios()</text>
-  <text x="540" y="526" class="small">two_proportion_sample_size()</text>
-  <text x="540" y="556" class="note">Baseline vs improved scenario math</text>
+  <text x="540" y="526" class="note">Baseline vs improved scenario math</text>
 
   <rect x="510" y="635" width="370" height="120" class="box"/>
   <text x="540" y="675" class="mono">tests/test_growth_model.py</text>
@@ -89,6 +88,7 @@
   <path d="M880 470 C915 470 925 420 960 420" class="arrow"/>
   <path d="M695 635 L695 585" class="arrow2"/>
 
-  <rect x="70" y="805" width="1260" height="54" rx="15" fill="#F5F4FA"/>
-  <text x="95" y="838" class="note">Key principle: public observations provide context; synthetic values drive the simulator; the model stays separate from the UI so the calculations are inspectable and testable.</text>
+  <rect x="70" y="792" width="1260" height="76" rx="15" fill="#F5F4FA"/>
+  <text x="95" y="824" class="note">Key principle: public observations provide context; synthetic values drive the simulator.</text>
+  <text x="95" y="850" class="note">The model stays separate from the UI so the calculations remain inspectable and testable.</text>
 </svg>
