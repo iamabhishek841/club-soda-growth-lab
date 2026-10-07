@@ -48,10 +48,19 @@ if section == "Growth overview":
         with col: st.markdown(f"<div class='focus-card'><div class='card-kicker'>{kicker}</div><div class='card-title'>{title}</div><div class='card-copy'>{copy}</div><div class='card-metric'>{metric}</div></div>", unsafe_allow_html=True)
 
     st.markdown("### See the value of improving the journey")
-    st.markdown('<div class="section-intro">Small conversion gains can create more bookings without more traffic. Adjust the slider to see an illustrative 1,000-visitor scenario.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-intro">Small conversion gains can create more bookings without more traffic. Adjust the slider to see an illustrative 1,000-visitor scenario. The same relative uplift is applied to both checkout-start and checkout-completion rates.</div>', unsafe_allow_html=True)
     chart_col, impact_col = st.columns([1.35, 1])
     with impact_col:
-        home_uplift = st.slider("Improve checkout + purchase conversion", 0, 20, 10, step=1, format="%d%%", key="home_conversion_uplift") / 100
+        home_uplift = st.slider(
+            "Relative uplift at each checkout stage",
+            0,
+            20,
+            10,
+            step=1,
+            format="%d%%",
+            key="home_conversion_uplift",
+            help="Applies the same relative uplift to checkout-start and checkout-completion rates. For example, 10% changes a 16% rate to 17.6%, not 26%.",
+        ) / 100
         home_result = compare_scenarios(
             FunnelInputs(
                 monthly_visitors=1000,
