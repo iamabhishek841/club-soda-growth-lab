@@ -37,27 +37,7 @@ Rather than optimising isolated vanity metrics, each section connects an action 
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    A[Public Club Soda website observations] --> B[src/content.py]
-    B -->|MEASUREMENT_EVENTS| C[app.py]
-
-    D[Synthetic / user-controlled funnel inputs] --> E[src/growth_model.py]
-    E --> F[Baseline scenario]
-    E --> G[Improved scenario]
-    F --> H[compare_scenarios]
-    G --> H
-    H --> C
-
-    C --> I[Growth overview]
-    C --> J[Website opportunities]
-    C --> K[Funnel simulator]
-    C --> L[Campaign studio]
-    C --> M[Customer journey]
-    C --> N[90-day action plan]
-
-    O[tests/test_growth_model.py] --> E
-```
+![Club Soda Growth Lab architecture](assets/architecture.svg)
 
 ### Code responsibilities
 
