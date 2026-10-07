@@ -37,7 +37,7 @@ My MSc Business Analytics work includes **Data Driven Marketing** and consumer a
 - conjoint analysis
 - segment-level preference analysis
 
-A separate customer-analytics assignment used a **3,000-customer** dataset for descriptive analysis, correlation, customer segmentation, retention inputs and segment-level CLV modelling.
+A separate marketing mix modelling project used **200 weekly observations** with geometric adstock, Hill saturation and trend/seasonality controls, then extended the analysis with Google Meridian Bayesian MMM to examine channel contribution, ROI and response curves.
 
 This project applies that evidence-first approach to a live digital-growth problem.
 
@@ -104,6 +104,7 @@ club-soda-growth-lab/
 3. **Segmentation based on observable behaviour** — avoid unnecessary personal inference.
 4. **One hypothesis, one primary metric** — make experiments interpretable.
 5. **Owned audience matters** — connect events, lifecycle messaging and the future shop.
+6. **Uplifts are relative, not percentage points** — simulator improvement controls apply relative changes to the selected funnel rates.
 
 ## Builder
 
